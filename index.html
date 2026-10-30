@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FruitCast — Price Prediction & Analysis</title>
+<style>
+:root{--green:#176b4d;--green2:#21865f;--mint:#eaf7ef;--ink:#18352a;--muted:#6e8178;--line:#e4ece7;--bg:#f7faf8;--orange:#ffb454;--white:#fff}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(120deg,#104d38,#21865f);color:#fff;padding:22px max(22px,calc((100vw - 1180px)/2));display:flex;justify-content:space-between;align-items:center;gap:18px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:1.18rem;letter-spacing:-.3px}.logo{width:42px;height:42px;border-radius:14px;background:#ffffff20;display:grid;place-items:center;font-size:24px}
+.header-right{font-size:.86rem;color:#d9f2e4}.wrap{max-width:1180px;margin:0 auto;padding:30px 22px 60px}
+.hero{display:flex;justify-content:space-between;align-items:center;gap:24px;margin:4px 0 26px}.eyebrow{color:var(--green2);font-weight:800;font-size:.75rem;letter-spacing:1.5px;text-transform:uppercase}.hero h1{font-size:clamp(2rem,4vw,3.15rem);letter-spacing:-1.7px;line-height:1.05;margin:10px 0 12px;max-width:720px}.hero p{margin:0;color:var(--muted);max-width:640px;line-height:1.65}.hero-art{font-size:clamp(4rem,8vw,7rem);filter:drop-shadow(0 12px 12px #245d3a1c);white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:22px}.stat,.panel{background:var(--white);border:1px solid var(--line);border-radius:18px;box-shadow:0 5px 18px #174a3510}.stat{padding:19px}.stat-label{font-size:.83rem;color:var(--muted);display:flex;align-items:center;gap:8px}.stat-value{font-size:1.65rem;font-weight:800;letter-spacing:-.5px;margin-top:12px}.stat-sub{font-size:.77rem;color:var(--muted);margin-top:4px}
+.layout{display:grid;grid-template-columns:1.05fr 1.6fr;gap:18px;align-items:start}.panel{padding:22px;margin-bottom:18px}.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}.panel h2{font-size:1.08rem;margin:0 0 5px;letter-spacing:-.25px}.panel .desc{font-size:.84rem;color:var(--muted);margin:0;line-height:1.5}
+.pill{background:var(--mint);color:var(--green);font-size:.72rem;font-weight:800;border-radius:999px;padding:7px 10px;white-space:nowrap}
+label{display:block;font-size:.84rem;font-weight:700;margin:14px 0 7px}select,input[type=number],input[type=file]{width:100%;border:1px solid #dce7df;background:#fff;border-radius:11px;padding:12px 13px;font:inherit;color:var(--ink);outline:none}select:focus,input:focus{border-color:var(--green2);box-shadow:0 0 0 3px #21865f18}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.primary{border:0;border-radius:11px;background:var(--green);color:white;font:inherit;font-weight:800;padding:13px 16px;cursor:pointer;width:100%;margin-top:18px;transition:.2s}.primary:hover{background:#10563d;transform:translateY(-1px)}
+.result{margin-top:16px;border-radius:14px;background:linear-gradient(130deg,#eaf7ef,#f5fbf7);padding:17px;display:none;border:1px solid #d7ecdf}.result small{color:var(--muted);font-weight:700}.result-price{font-size:2rem;font-weight:850;letter-spacing:-1px;margin:5px 0;color:var(--green)}.result-note{font-size:.8rem;color:var(--muted);line-height:1.5}
+.chart-area{height:260px;position:relative;width:100%}canvas{width:100%;height:100%;display:block}.chart-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.77rem;color:var(--muted);margin-top:12px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.bar-list{display:grid;gap:14px}.bar-row{display:grid;grid-template-columns:78px 1fr 70px;gap:10px;align-items:center;font-size:.83rem}.bar-track{height:9px;background:#edf3ef;border-radius:99px;overflow:hidden}.bar-fill{height:100%;background:linear-gradient(90deg,#2b9b6e,#8bd4a7);border-radius:99px}.bar-value{text-align:right;font-weight:800}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{text-align:left;padding:13px 10px;border-bottom:1px solid var(--line);white-space:nowrap}th{font-size:.73rem;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:800}tbody tr:last-child td{border-bottom:0}.fruit-name{font-weight:750}.fruit-emoji{display:inline-block;margin-right:8px}.positive{color:#16834f;font-weight:800}.negative{color:#c05c37;font-weight:800}
+.upload-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.upload-row input{flex:1;min-width:220px}.secondary{border:1px solid #dce7df;background:white;color:var(--green);font:inherit;font-weight:800;border-radius:10px;padding:11px 14px;cursor:pointer}.notice{background:#fff8e9;border:1px solid #f4e1b9;border-radius:12px;padding:12px 14px;color:#79551b;font-size:.8rem;line-height:1.5;margin-top:14px}
+footer{text-align:center;color:var(--muted);font-size:.78rem;padding:20px 22px 35px}
+@media(max-width:850px){.stats{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.hero-art{display:none}.hero{margin-top:12px}}
+@media(max-width:480px){header{align-items:flex-start;flex-direction:column}.stats{gap:10px}.stat{padding:14px}.stat-value{font-size:1.35rem}.panel{padding:17px}.form-row{grid-template-columns:1fr}.wrap{padding:22px 14px 40px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo">🍏</div><span>FruitCast <span style="font-weight:500;opacity:.75">/ Analytics</span></span></div>
+  <div class="header-right">● Demo dashboard · Responsive web app</div>
+</header>
+<main class="wrap">
+  <section class="hero">
+    <div><div class="eyebrow">Fresh insights, smarter decisions</div><h1>Fruit Price Prediction<br>&amp; Analysis</h1><p>Explore fruit price patterns, compare average prices, and estimate next prices with an easy-to-use analytics dashboard.</p></div>
+    <div class="hero-art" aria-hidden="true">🍎🍌🍇</div>
+  </section>
+
+  <section class="stats">
+    <div class="stat"><div class="stat-label">🧺 Fruits tracked</div><div class="stat-value" id="fruitCount">5</div><div class="stat-sub">In current dataset</div></div>
+    <div class="stat"><div class="stat-label">₹ Average price</div><div class="stat-value" id="avgPrice">₹87.00</div><div class="stat-sub">Per kilogram</div></div>
+    <div class="stat"><div class="stat-label">↗ Highest price</div><div class="stat-value" id="maxPrice">₹140.00</div><div class="stat-sub" id="maxFruit">Apple · per kg</div></div>
+    <div class="stat"><div class="stat-label">📄 Records</div><div class="stat-value" id="recordCount">60</div><div class="stat-sub">Illustrative sample rows</div></div>
+  </section>
+
+  <section class="layout">
+    <div>
+      <div class="panel">
+        <div class="panel-head"><div><h2>🔮 Predict a fruit price</h2><p class="desc">Choose a fruit and month to get an indicative estimate.</p></div><span class="pill">PREDICT</span></div>
+        <label for="fruitSelect">Select fruit</label><select id="fruitSelect"></select>
+        <div class="form-row">
+          <div><label for="monthSelect">Target month</label><select id="monthSelect"></select></div>
+          <div><label for="previousPrice">Previous price (₹/kg)</label><input id="previousPrice" type="number" min="0.01" step="0.5" value="140"></div>
+        </div>
+        <button class="primary" id="predictBtn">Estimate price →</button>
+        <div class="result" id="resultBox" aria-live="polite">
+          <small>ESTIMATED PRICE</small><div class="result-price" id="resultPrice">₹145.00/kg</div><div id="resultChange"></div><p class="result-note" id="resultNote"></p>
+        </div>
+        <div class="notice">Demo only: estimates use illustrative sample data and a simple seasonal adjustment, not a trained production ML model or live market prices.</div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><div><h2>📂 Upload your dataset</h2><p class="desc">Use a CSV with Fruit, Year, Month, Previous_Price, Price columns.</p></div></div>
+        <div class="upload-row"><input id="csvFile" type="file" accept=".csv,text/csv"><button class="secondary" id="resetBtn">Reset demo</button></div>
+        <p class="desc" id="uploadStatus" style="margin-top:12px">Using built-in illustrative demo data.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <div class="panel-head"><div><h2>📈 Monthly price trend</h2><p class="desc">Illustrative price patterns across the year.</p></div><span class="pill">₹ / KG</span></div>
+        <div class="chart-area"><canvas id="trendChart" aria-label="Monthly price trend chart"></canvas></div>
+        <div class="chart-legend" id="trendLegend"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div><h2>🍊 Average price comparison</h2><p class="desc">Compare average price across fruits in the loaded data.</p></div></div>
+        <div class="bar-list" id="priceBars"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div><h2>🧾 Fruit price overview</h2><p class="desc">Average price and most recent available record per fruit.</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Fruit</th><th>Avg. price</th><th>Latest price</th><th>Change</th></tr></thead><tbody id="fruitTable"></tbody></table></div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>FruitCast · Fruit Price Prediction &amp; Analysis · Replace demo data with verified market records for real-world use.</footer>
+<script>
+const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const colors = ["#21865f","#f2a541","#7b75d1","#e36f55","#4299c2"];
+const fruitEmoji = {Apple:"🍎",Banana:"🍌",Mango:"🥭",Orange:"🍊",Grapes:"🍇"};
+const base = {Apple:140,Banana:45,Mango:80,Orange:70,Grapes:100};
+const seasonal = {
+ Apple:[5,5,8,10,10,5,0,-5,-5,0,5,8],
+ Banana:[0,0,2,3,5,5,4,3,2,0,0,0],
+ Mango:[-20,-15,0,20,30,25,10,-10,-20,-20,-20,-20],
+ Orange:[15,15,10,5,0,-5,-5,0,5,10,15,15],
+ Grapes:[0,5,10,15,10,0,-10,-10,-5,0,5,5]
+};
+let data = [];
+function makeDemo(){
+ data=[];
+ for(const fruit of Object.keys(base)){
+   let prev=base[fruit];
+   for(let year=2022;year<=2025;year++){
+     for(let month=1;month<=12;month++){
+       const variation=Math.sin((year*13+month*7+base[fruit])*2.17)*base[fruit]*.055;
+       const price=Math.max(10,base[fruit]+seasonal[fruit][month-1]+(year-2022)*base[fruit]*.025+variation);
+       data.push({Fruit:fruit,Year:year,Month:month,Previous_Price:+prev.toFixed(2),Price:+price.toFixed(2)});
+       prev=price;
+     }
+   }
+ }
+}
+function uniqueFruits(){return [...new Set(data.map(d=>d.Fruit))].sort()}
+function avg(arr){return arr.reduce((s,x)=>s+x,0)/(arr.length||1)}
+function money(n){return "₹"+Number(n).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function statsFor(fruit){
+ const rows=data.filter(d=>d.Fruit===fruit).sort((a,b)=>a.Year-b.Year||a.Month-b.Month);
+ return {avg:avg(rows.map(d=>d.Price)),latest:rows[rows.length-1]?.Price||0,prev:rows[rows.length-1]?.Previous_Price||0,rows};
+}
+function populateSelectors(){
+ const fs=document.getElementById("fruitSelect"), old=fs.value;
+ fs.innerHTML=uniqueFruits().map(f=>`<option value="${escapeHtml(f)}">${fruitEmoji[f]||"🍐"} ${escapeHtml(f)}</option>`).join("");
+ if(uniqueFruits().includes(old))fs.value=old;
+ document.getElementById("monthSelect").innerHTML=months.map((m,i)=>`<option value="${i+1}">${m}</option>`).join("");
+ updatePrevious();
+}
+function updatePrevious(){
+ const f=document.getElementById("fruitSelect").value;
+ if(!f)return;
+ const s=statsFor(f);
+ document.getElementById("previousPrice").value=(s.latest||s.avg).toFixed(2);
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function renderStats(){
+ const fruits=uniqueFruits(), prices=data.map(d=>d.Price), highest=Math.max(...prices);
+ const highRow=data.find(d=>d.Price===highest);
+ document.getElementById("fruitCount").textContent=fruits.length;
+ document.getElementById("avgPrice").textContent=money(avg(prices));
+ document.getElementById("maxPrice").textContent=money(highest);
+ document.getElementById("maxFruit").textContent=(highRow?.Fruit||"")+" · per kg";
+ document.getElementById("recordCount").textContent=data.length;
+}
+function renderBars(){
+ const fs=uniqueFruits(), values=fs.map(f=>({f,v:statsFor(f).avg})), max=Math.max(...values.map(x=>x.v),1);
+ document.getElementById("priceBars").innerHTML=values.sort((a,b)=>b.v-a.v).map(({f,v})=>`<div class="bar-row"><span>${fruitEmoji[f]||"🍐"} ${escapeHtml(f)}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.max(2,v/max*100)}%"></div></div><span class="bar-value">${money(v)}</span></div>`).join("");
+}
+function renderTable(){
+ document.getElementById("fruitTable").innerHTML=uniqueFruits().map(f=>{
+ const s=statsFor(f), change=s.latest-s.prev, pct=s.prev?change/s.prev*100:0;
+ return `<tr><td class="fruit-name"><span class="fruit-emoji">${fruitEmoji[f]||"🍐"}</span>${escapeHtml(f)}</td><td>${money(s.avg)}</td><td>${money(s.latest)}</td><td class="${change>=0?"positive":"negative"}">${change>=0?"+":""}${pct.toFixed(1)}%</td></tr>`;
+ }).join("");
+}
+function drawChart(){
+ const canvas=document.getElementById("trendChart"), ctx=canvas.getContext("2d"), rect=canvas.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+ canvas.width=Math.max(300,rect.width)*dpr;canvas.height=Math.max(220,rect.height)*dpr;ctx.scale(dpr,dpr);
+ const w=canvas.width/dpr,h=canvas.height/dpr,p={l:43,r:12,t:15,b:32},cw=w-p.l-p.r,ch=h-p.t-p.b;
+ ctx.clearRect(0,0,w,h);
+ const fruits=uniqueFruits().slice(0,5);
+ const series=fruits.map(f=>({f,vals:months.map((_,i)=>{const rows=data.filter(d=>d.Fruit===f&&d.Month===i+1);return avg(rows.map(r=>r.Price))})}));
+ let min=Math.min(...series.flatMap(s=>s.vals)),max=Math.max(...series.flatMap(s=>s.vals));min=Math.floor(min/10)*10;max=Math.ceil(max/10)*10;if(max===min)max=min+10;
+ ctx.font="10px system-ui";ctx.textAlign="right";ctx.textBaseline="middle";
+ for(let k=0;k<=4;k++){const val=min+(max-min)*k/4,y=p.t+ch-k*ch/4;ctx.strokeStyle="#e8efea";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(p.l,y);ctx.lineTo(w-p.r,y);ctx.stroke();ctx.fillStyle="#7b8d83";ctx.fillText(Math.round(val),p.l-8,y);}
+ ctx.textAlign="center";ctx.textBaseline="top";
+ months.forEach((m,i)=>{if(i%2===0||w<420){const x=p.l+i*cw/11;ctx.fillStyle="#7b8d83";ctx.fillText(m.slice(0,3),x,h-p.b+10)}});
+ series.forEach((s,si)=>{ctx.beginPath();s.vals.forEach((v,i)=>{const x=p.l+i*cw/11,y=p.t+(max-v)/(max-min)*ch;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.strokeStyle=colors[si%colors.length];ctx.lineWidth=2.3;ctx.lineJoin="round";ctx.stroke();s.vals.forEach((v,i)=>{const x=p.l+i*cw/11,y=p.t+(max-v)/(max-min)*ch;ctx.beginPath();ctx.arc(x,y,2.4,0,Math.PI*2);ctx.fillStyle=colors[si%colors.length];ctx.fill()})});
+ document.getElementById("trendLegend").innerHTML=series.map((s,i)=>`<span><i class="dot" style="background:${colors[i%colors.length]}"></i>${escapeHtml(s.f)}</span>`).join("");
+}
+function render(){renderStats();renderBars();renderTable();drawChart();populateSelectors();}
+function predict(){
+ const f=document.getElementById("fruitSelect").value, month=+document.getElementById("monthSelect").value, prev=+document.getElementById("previousPrice").value;
+ if(!f||!Number.isFinite(prev)||prev<=0){alert("Please select a fruit and enter a previous price greater than zero.");return}
+ const hist=data.filter(d=>d.Fruit===f), baseMonth=avg(hist.filter(d=>d.Month===month).map(d=>d.Price)), baseAll=avg(hist.map(d=>d.Price));
+ const seasonalAdjustment=baseAll?baseMonth/baseAll:1;
+ const estimate=Math.max(.01,prev*(.65+.35*seasonalAdjustment));
+ const diff=estimate-prev,pct=diff/prev*100;
+ document.getElementById("resultPrice").textContent=money(estimate)+"/kg";
+ document.getElementById("resultChange").innerHTML=`<strong class="${diff>=0?"positive":"negative"}">${diff>=0?"▲":"▼"} ${money(Math.abs(diff))} (${pct>=0?"+":""}${pct.toFixed(1)}%)</strong> <span style="color:#6e8178;font-size:.82rem">vs. previous price</span>`;
+ document.getElementById("resultNote").textContent=`${f} · ${months[month-1]}. This estimate applies a simple seasonal adjustment to the entered price.`;
+ document.getElementById("resultBox").style.display="block";
+}
+function parseCSV(text){
+ const lines=text.trim().split(/\r?\n/);if(lines.length<2)throw Error("CSV must include a header and at least one data row.");
+ const headers=lines[0].split(",").map(s=>s.trim().replace(/^"|"$/g,""));
+ const required=["Fruit","Year","Month","Previous_Price","Price"];
+ const idx={};required.forEach(k=>{idx[k]=headers.indexOf(k);if(idx[k]<0)throw Error("Missing required column: "+k)});
+ const rows=[];
+ for(let i=1;i<lines.length;i++){
+  if(!lines[i].trim())continue;
+  const cells=lines[i].split(",").map(s=>s.trim().replace(/^"|"$/g,""));
+  const row={Fruit:cells[idx.Fruit],Year:+cells[idx.Year],Month:+cells[idx.Month],Previous_Price:+cells[idx.Previous_Price],Price:+cells[idx.Price]};
+  if(row.Fruit&&Number.isFinite(row.Year)&&Number.isFinite(row.Month)&&row.Month>=1&&row.Month<=12&&row.Previous_Price>0&&row.Price>0)rows.push(row);
+ }
+ if(rows.length<3)throw Error("Need at least 3 valid rows. Check your numeric values and month range (1-12).");
+ return rows;
+}
+document.getElementById("predictBtn").addEventListener("click",predict);
+document.getElementById("fruitSelect").addEventListener("change",updatePrevious);
+document.getElementById("csvFile").addEventListener("change",async e=>{
+ const file=e.target.files[0];if(!file)return;
+ try{data=parseCSV(await file.text());document.getElementById("uploadStatus").textContent=`Loaded ${data.length} valid rows from ${file.name}.`;render();document.getElementById("resultBox").style.display="none";}
+ catch(err){alert("Could not load CSV: "+err.message);document.getElementById("uploadStatus").textContent="Upload failed. Please check the CSV format.";}
+});
+document.getElementById("resetBtn").addEventListener("click",()=>{makeDemo();document.getElementById("csvFile").value="";document.getElementById("uploadStatus").textContent="Using built-in illustrative demo data.";document.getElementById("resultBox").style.display="none";render()});
+window.addEventListener("resize",drawChart);
+makeDemo();render();
+</script>
+</body>
+</html>
